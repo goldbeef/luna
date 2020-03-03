@@ -44,11 +44,15 @@ public:
         snprintf(m_name, sizeof(m_name), "hello");
     }
 
+    //类导出声明
     DECLARE_LUA_CLASS(my_class);
 };
 
+//导出类
 LUA_EXPORT_CLASS_BEGIN(my_class)
+//导出类方法
 LUA_EXPORT_METHOD(func_a)
+//导出类成员
 LUA_EXPORT_PROPERTY(m_name)
 LUA_EXPORT_CLASS_END()
 
@@ -65,7 +69,7 @@ int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
-
+    //导出全局函数
     lua_register_function(L, "add", add);
     lua_register_function(L, "del", del);
     lua_register_function(L, "NewMyClass", NewMyClass);
@@ -80,10 +84,17 @@ int main(){
     */
 
     //lua call
-    /*
-    */
-    luaL_dofile(L, "./test.lua");
+    //调用整个文件
+    luaL_loadfile(L, "./test.lua");
+    stackDump(L);
+    lua_pcall(L, 0, 0, 0);
 
+    //调用局部方法
+    lua_guard g(L); //用它来做栈保护
+    int x, y;
+    const char* name = nullptr;
+    // 小心,如果用char*做字符串返回值的话,确保name变量不要在lua_guard g的作用域之外使用
+    lua_call_table_function(L, nullptr, "s2s", "some_func0");
 
     lua_close(L);
     return 0;
