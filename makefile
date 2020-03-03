@@ -2,7 +2,7 @@ product = luna
 # execute, dynamic_shared, static_shared
 target_type = dynamic_shared
 define_macros =
-include_dir =
+include_dir = /usr/local/Cellar/lua/5.3.5_1/include/lua5.3
 # 依赖库列表,空格分开
 lib = 
 # 最终产品目录:
