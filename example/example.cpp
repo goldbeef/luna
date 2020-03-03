@@ -39,16 +39,22 @@ class my_class final {
         return 0;
     }
 public:
+    char m_name[32];
+    my_class() {
+        snprintf(m_name, sizeof(m_name), "hello");
+    }
+
     DECLARE_LUA_CLASS(my_class);
 };
 
 LUA_EXPORT_CLASS_BEGIN(my_class)
 LUA_EXPORT_METHOD(func_a)
+LUA_EXPORT_PROPERTY(m_name)
 LUA_EXPORT_CLASS_END()
 
 
 my_class* NewMyClass() {
-    my_class* ptr = new my_class;
+    my_class* ptr = new my_class();
     return ptr;
 }
 
