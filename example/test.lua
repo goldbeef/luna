@@ -13,7 +13,15 @@ print(myClass.func_a(nil, nil))
 print(myClass.name)
 --]]
 
-
+s2s = {}
 function s2s.some_func0()
     print("s2s.some_func0")
+end
+
+function s2s.some_func2(var1, var2)
+    print(string.format("s2s.some_func2, [%g], [%g]", var1, var2))
+end
+
+function s2s.some_func3(var1, var2, var3)
+    print(string.format("s2s.some_func3, [%g], [%g], [%g]", var1, var2, var3))
 end

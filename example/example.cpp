@@ -1,6 +1,7 @@
 #include <iostream>
 #include "luna.h"
 #include <lauxlib.h>
+using namespace std;
 
 int add(int a, int b) {
     return a + b;
@@ -94,7 +95,11 @@ int main(){
     int x, y;
     const char* name = nullptr;
     // 小心,如果用char*做字符串返回值的话,确保name变量不要在lua_guard g的作用域之外使用
-    lua_call_table_function(L, nullptr, "s2s", "some_func0");
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func_no_such") << endl; //false
+
+    lua_call_table_function(L, nullptr, "s2s", "some_func2", std::tie(), 11, 2);
+    lua_call_table_function(L, nullptr, "s2s", "some_func3", std::tie(), 11, 2, 3);
 
     lua_close(L);
     return 0;
