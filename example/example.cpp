@@ -36,6 +36,7 @@ void stackDump(lua_State* L) {
 class my_class final {
     int func_a(const char* a, int b) {
         printf("func_a, a[%s], b[%d]\n", a, b);
+        return 0;
     }
 public:
     DECLARE_LUA_CLASS(my_class);
@@ -46,6 +47,14 @@ LUA_EXPORT_METHOD(func_a)
 LUA_EXPORT_CLASS_END()
 
 
+my_class* NewMyClass() {
+    my_class* ptr = new my_class;
+    return ptr;
+}
+
+
+
+
 int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -53,6 +62,7 @@ int main(){
 
     lua_register_function(L, "add", add);
     lua_register_function(L, "del", del);
+    lua_register_function(L, "NewMyClass", NewMyClass);
 
     /*
     //c++ call
@@ -65,8 +75,8 @@ int main(){
 
     //lua call
     /*
-    luaL_dofile(L, "./test.lua");
     */
+    luaL_dofile(L, "./test.lua");
 
 
     lua_close(L);
