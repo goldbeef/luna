@@ -97,9 +97,14 @@ int main(){
     // 小心,如果用char*做字符串返回值的话,确保name变量不要在lua_guard g的作用域之外使用
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func_no_such") << endl; //false
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func2", std::tie(), 11, 2) << endl;
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func3", std::tie(), 11, 2, 3) << endl;
 
-    lua_call_table_function(L, nullptr, "s2s", "some_func2", std::tie(), 11, 2);
-    lua_call_table_function(L, nullptr, "s2s", "some_func3", std::tie(), 11, 2, 3);
+
+    //调用对象的 方法
+    cout << lua_call_table_function(L, nullptr, "myClass", "some_func0") << endl;
+    //覆盖对象的 方法
+    cout << lua_call_table_function(L, nullptr, "myClass", "func_a") << endl;
 
     lua_close(L);
     return 0;
