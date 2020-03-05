@@ -19,4 +19,4 @@ add_executable(luna
         makefile
         README.md
         var_int.cpp
-        var_int.h)
+        var_int.h example/test.cpp)
