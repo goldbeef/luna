@@ -10,8 +10,23 @@ using namespace std;
     cout << #content << endl
 
 
+int test(int) {
+        return 0;
+}
+
+
+
+struct StTest {
+        int a;
+        int b;
+    };
 
 int main() {
       HELLO(test);
+
+      test(0);
+
+
+      cout << ((StTest*)nullptr)->a << endl;
       return 0;
 }
