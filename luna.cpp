@@ -15,6 +15,33 @@
 #include <algorithm>
 #include "luna.h"
 
+void stackDump(lua_State* L) {
+    int top = lua_gettop(L);
+    printf("stack begin, total[%d]\n", top);
+
+    for (int i = 1; i <= top; i++) {
+        int type = lua_type(L, i);
+        switch (type) {
+            case LUA_TSTRING:
+                printf("'%s'", lua_tostring(L, i));
+                break;
+            case LUA_TBOOLEAN:
+                printf(lua_toboolean(L, i) ? "true" : "false");
+                break;
+            case LUA_TNUMBER:
+                printf("%g", lua_tonumber(L, i));
+                break;
+            default:
+                printf("%s", lua_typename(L, type));
+                break;
+        }
+        printf("\t");
+    }
+    printf("\n");
+
+    printf("stack end\n");
+}
+
 struct luna_function_wapper final {
     luna_function_wapper(const lua_global_function& func) : m_func(func) {}
     lua_global_function m_func;

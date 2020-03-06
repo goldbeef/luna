@@ -15,6 +15,8 @@
 #include <utility>
 #include "lua.hpp"
 
+void stackDump(lua_State* L);
+
 template <typename T> void lua_push_object(lua_State* L, T obj);
 template <typename T> T lua_to_object(lua_State* L, int idx);
 
@@ -556,7 +558,7 @@ T lua_to_object(lua_State* L, int idx) {//伪索引
     static_assert(has_meta_data<typename std::remove_pointer<T>::type>::value, "T should be declared export !");
 
     //转换成正向索引
-    idx = lua_normal_index(L, idx); 
+    idx = lua_normal_index(L, idx);
 
     //todo, 类对象
     if (lua_istable(L, idx)) {
@@ -607,6 +609,9 @@ inline void lua_push_function(lua_State* L, lua_CFunction func) { lua_pushcfunct
 
 template <typename T>
 void lua_push_function(lua_State* L, T func) {
+    //c_function:
+    //          a.可能是原生的，
+    //          b. 或者是lua_global_bridge包装的
     lua_push_function(L, lua_adapter(func));
 }
 
