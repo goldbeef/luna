@@ -270,7 +270,7 @@ struct lua_member_item {
 
 template <typename T>
 int lua_member_index(lua_State* L) {
-    T* obj = lua_to_object<T*>(L, 1);
+    T* obj = lua_to_object<T*>(L, 1); //强制转换为
     if (obj == nullptr) {
         lua_pushnil(L);
         return 1;
@@ -351,11 +351,15 @@ int lua_object_gc(lua_State* L) {
 
 template <typename T>
 void lua_register_class(lua_State* L, T* obj) {
-    int top = lua_gettop(L);
-    const char* meta_name = obj->lua_get_meta_name();
+    int top = lua_gettop(L); //stack num
+
+    const char* meta_name = obj->lua_get_meta_name(); //"_class_meta:"#ClassName
     lua_member_item* item = obj->lua_get_meta_data();
 
+    // ..., tObj, "_class_meta:"#ClassName
     luaL_newmetatable(L, meta_name);
+
+    // "_class_meta:"#ClassName, __index
     lua_pushstring(L, "__index");
     lua_pushcfunction(L, &lua_member_index<T>);
     lua_rawset(L, -3);
@@ -397,7 +401,7 @@ void lua_push_object(lua_State* L, T obj) {
 
         //
         lua_pop(L, 1);
-        
+
         // t1
         lua_newtable(L);
         // t1, t2
@@ -413,7 +417,8 @@ void lua_push_object(lua_State* L, T obj) {
 
         /*
          * t1
-         * t1.m --> t2
+         * t1.meta --> t2
+         * t2 = { __mode = "v", }
          * */
         lua_setmetatable(L, -2);
 
@@ -422,22 +427,29 @@ void lua_push_object(lua_State* L, T obj) {
 
         /*
          * t1
-         * t1.m --> t2
-         * LUA_REGISTRYINDEX = {__objects__ = t}
+         * t1.meta --> t2
+         * t2 = { __mode = "v", }
+         *
+         * LUA_REGISTRYINDEX = {__objects__ = t1}
          */
         lua_setfield(L, LUA_REGISTRYINDEX, "__objects__");
     }
 
-    // LUA_REGISTRYINDEX.__objects__
+    //t1 ==>
+    // LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
     if (lua_rawgetp(L, -1, obj) != LUA_TTABLE) {
-        //说明对象还没有完全导出来
-        //LUA_REGISTRYINDEX.__objects__, nil
+        //说明对象obj还没有完全导出来
+        //LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
         if (!_lua_set_fence(L, obj)) {
+            //已经导出来了, 直接返回
+            //
             lua_remove(L, -2);
             return;
         }
 
-        //LUA_REGISTRYINDEX.__objects__,
+        //LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
+
+        //LUA_REGISTRYINDEX.__objects__
         lua_pop(L, 1);
 
         //LUA_REGISTRYINDEX.__objects__, tObj
@@ -457,7 +469,8 @@ void lua_push_object(lua_State* L, T obj) {
 
         // LUA_REGISTRYINDEX.__objects__, tObj
         const char* meta_name = obj->lua_get_meta_name(); //_G."_class_meta:"#ClassName.meta
-        // LUA_REGISTRYINDEX.__objects__, tObj, nil for tabb
+
+        // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName.meta or nil
         luaL_getmetatable(L, meta_name);
 
         if (lua_isnil(L, -1)) {
@@ -466,12 +479,13 @@ void lua_push_object(lua_State* L, T obj) {
             // LUA_REGISTRYINDEX.__objects__, tObj
             lua_remove(L, -1);
 
-
             lua_register_class(L, obj);
+
+            // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
             luaL_getmetatable(L, meta_name);
         }
-        // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
 
+        // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
 
         /*
          * LUA_REGISTRYINDEX.__objects__, tObj,
@@ -486,12 +500,14 @@ void lua_push_object(lua_State* L, T obj) {
         lua_pushvalue(L, -1);
 
         /*
-        * LUA_REGISTRYINDEX.__objects__
+        * LUA_REGISTRYINDEX.__objects__, tObj
         * tObj.meta = _G."_class_meta:"#ClassName.meta
-        * LUA_REGISTRYINDEX.__objects__.tObj = tObj
+        * LUA_REGISTRYINDEX.__objects__.obj = tObj
         */
         lua_rawsetp(L, -3, obj);
     }
+
+    // LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
     lua_remove(L, -2);
 }
 

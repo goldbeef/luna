@@ -78,21 +78,42 @@ bool lua_call_function(lua_State* L, std::string* err, int arg_count, int ret_co
 static const char* s_fence = "__fence__";
 
 bool _lua_set_fence(lua_State* L, const void* p) {
+    //LUA_REGISTRYINDEX.__fence__ or nil,
     lua_getfield(L, LUA_REGISTRYINDEX, s_fence);
     if (!lua_istable(L, -1)) {
+        //nil
+
+        //
         lua_pop(L, 1);
+
+        //t
         lua_newtable(L);
+        //t, t
         lua_pushvalue(L, -1);
+        //t
+        //LUA_REGISTRYINDEX.__fence__  = t
         lua_setfield(L, LUA_REGISTRYINDEX, s_fence);
     }
 
+    //LUA_REGISTRYINDEX.__fence__,
+
+    //LUA_REGISTRYINDEX.__fence__, LUA_REGISTRYINDEX.__fence__.p or nil
     if (lua_rawgetp(L, -1, p) != LUA_TNIL) {
+        //说明已经有这个对象了，设置了fence
         lua_pop(L, 2);
         return false;
     }  
-         
+
+    //LUA_REGISTRYINDEX.__fence__, nil
+
+    //LUA_REGISTRYINDEX.__fence__, nil, true
     lua_pushboolean(L, true);
+
+    //LUA_REGISTRYINDEX.__fence__, nil
+    //LUA_REGISTRYINDEX.__fence__.p = true
     lua_rawsetp(L, -3, p);
+
+    //空
     lua_pop(L, 2);
     return true;     
 }
