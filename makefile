@@ -15,7 +15,7 @@ lib_dir =
 
 CC = gcc
 CXX = g++
-CFLAGS =
+CFLAGS = #-DDEBUG
 
 OS := $(shell uname)
 

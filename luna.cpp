@@ -16,6 +16,7 @@
 #include "luna.h"
 
 void stackDump(lua_State* L, int line, const char* filename) {
+#ifdef DEBUG
     int top = lua_gettop(L);
     printf("[%s:%d]stack begin, total[%d]\n", filename, line, top);
 
@@ -40,6 +41,7 @@ void stackDump(lua_State* L, int line, const char* filename) {
     printf("\n");
 
     printf("[%s:%d]stack end\n", filename, line);
+#endif
 }
 
 struct luna_function_wapper final {
