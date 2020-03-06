@@ -25,16 +25,21 @@ LUA_EXPORT_CLASS_BEGIN(luna_function_wapper)
 LUA_EXPORT_CLASS_END()
 
 static int lua_global_bridge(lua_State* L) {
+    //强制类型转换
     auto* wapper  = lua_to_object<luna_function_wapper*>(L, lua_upvalueindex(1));
     if (wapper != nullptr) {
+        //全局函数调用
         return wapper->m_func(L);
     }
     return 0;
 }
 
 void lua_push_function(lua_State* L, lua_global_function func) {
+    //LUA_REGISTRYINDEX.__objects__.obj
     lua_push_object(L, new luna_function_wapper(func));
-    lua_pushcclosure(L, lua_global_bridge, 1);
+
+    //lua_global_bridge,
+    lua_pushcclosure(L, lua_global_bridge, 1); //有一个参数
 }
 
 int _lua_object_bridge(lua_State* L) {

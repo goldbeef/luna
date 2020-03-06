@@ -71,8 +71,8 @@ void native_to_lua(lua_State* L, T v) {
 inline int lua_normal_index(lua_State* L, int idx) {
     int top = lua_gettop(L);
     if (idx < 0 && -idx <= top)
-        return idx + top + 1;
-    return idx;
+        return idx + top + 1; //转换为正向索引(栈中的)
+    return idx; //可能为负
 }
 
 bool _lua_set_fence(lua_State* L, const void* p);
@@ -508,6 +508,8 @@ void lua_push_object(lua_State* L, T obj) {
     }
 
     // LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
+
+    // LUA_REGISTRYINDEX.__objects__.obj
     lua_remove(L, -2);
 }
 
@@ -548,19 +550,30 @@ struct has_meta_data {
 };
 
 template <typename T>
-T lua_to_object(lua_State* L, int idx) {
+T lua_to_object(lua_State* L, int idx) {//伪索引
     T obj = nullptr;
 
     static_assert(has_meta_data<typename std::remove_pointer<T>::type>::value, "T should be declared export !");
 
-    idx = lua_normal_index(L, idx);
+    //转换成正向索引
+    idx = lua_normal_index(L, idx); 
 
+    //todo, 类对象
     if (lua_istable(L, idx)) {
+        //tObj ..
+        //tObj .., __pointer__
         lua_pushstring(L, "__pointer__");
+
+        //tObj ..,  obj
         lua_rawget(L, idx);
+
         obj = (T)lua_touserdata(L, -1);
+
+        //tObj ..,
         lua_pop(L, 1);
     }
+
+    //全局函数obj
     return obj;
 }
 
