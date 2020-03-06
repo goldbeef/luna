@@ -15,7 +15,7 @@
 #include <utility>
 #include "lua.hpp"
 
-void stackDump(lua_State* L);
+void stackDump(lua_State* L, int line, const char* filename);
 
 template <typename T> void lua_push_object(lua_State* L, T obj);
 template <typename T> T lua_to_object(lua_State* L, int idx);
@@ -392,12 +392,14 @@ void lua_register_class(lua_State* L, T* obj) {
 
 template <typename T>
 void lua_push_object(lua_State* L, T obj) {
+    stackDump(L, __LINE__, __FUNCTION__);
     if (obj == nullptr) {
         lua_pushnil(L);
         return;
     }
 
     lua_getfield(L, LUA_REGISTRYINDEX, "__objects__");
+    stackDump(L, __LINE__, __FUNCTION__);
     if (lua_isnil(L, -1)) {
         // nil,
 
@@ -439,6 +441,7 @@ void lua_push_object(lua_State* L, T obj) {
 
     //t1 ==>
     // LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
+    stackDump(L, __LINE__, __FUNCTION__);
     if (lua_rawgetp(L, -1, obj) != LUA_TTABLE) {
         //说明对象obj还没有完全导出来
         //LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
@@ -508,11 +511,13 @@ void lua_push_object(lua_State* L, T obj) {
         */
         lua_rawsetp(L, -3, obj);
     }
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // LUA_REGISTRYINDEX.__objects__, LUA_REGISTRYINDEX.__objects__.obj
 
     // LUA_REGISTRYINDEX.__objects__.obj
     lua_remove(L, -2);
+    stackDump(L, __LINE__, __FUNCTION__);
 }
 
 template <typename T>
@@ -560,7 +565,7 @@ T lua_to_object(lua_State* L, int idx) {//伪索引
     //转换成正向索引
     idx = lua_normal_index(L, idx);
 
-    //todo, 类对象
+    //类对象
     if (lua_istable(L, idx)) {
         //tObj ..
         //tObj .., __pointer__
@@ -617,7 +622,9 @@ void lua_push_function(lua_State* L, T func) {
 
 template <typename T>
 void lua_register_function(lua_State* L, const char* name, T func) {
+    stackDump(L, __LINE__, __FUNCTION__);
     lua_push_function(L, func);
+    stackDump(L, __LINE__, __FUNCTION__);
     lua_setglobal(L, name);
 }
 

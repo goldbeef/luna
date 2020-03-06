@@ -44982,6 +44982,8 @@ typedef struct luaL_Stream {
 }
 # 17 "../luna.h" 2
 
+void stackDump(lua_State* L, int line, const char* filename);
+
 template <typename T> void lua_push_object(lua_State* L, T obj);
 template <typename T> T lua_to_object(lua_State* L, int idx);
 
@@ -45319,10 +45321,14 @@ int lua_object_gc(lua_State* L) {
 template <typename T>
 void lua_register_class(lua_State* L, T* obj) {
     int top = lua_gettop(L);
+
     const char* meta_name = obj->lua_get_meta_name();
     lua_member_item* item = obj->lua_get_meta_data();
 
+
     luaL_newmetatable(L, meta_name);
+
+
     lua_pushstring(L, "__index");
     lua_pushcclosure(L, (&lua_member_index<T>), 0);
     lua_rawset(L, -3);
@@ -45360,46 +45366,112 @@ void lua_push_object(lua_State* L, T obj) {
 
     lua_getfield(L, (-1000000 - 1000), "__objects__");
     if ((lua_type(L, (-1)) == 0)) {
+
+
+
         lua_settop(L, -(1)-1);
+
+
         lua_createtable(L, 0, 0);
 
         lua_createtable(L, 0, 0);
+
         lua_pushstring(L, "v");
+
+
+
+
+
         lua_setfield(L, -2, "__mode");
+
+
+
+
+
+
         lua_setmetatable(L, -2);
 
+
         lua_pushvalue(L, -1);
+# 437 "../luna.h"
         lua_setfield(L, (-1000000 - 1000), "__objects__");
     }
 
 
+
     if (lua_rawgetp(L, -1, obj) != 5) {
+
+
         if (!_lua_set_fence(L, obj)) {
+
+
             (lua_rotate(L, (-2), -1), lua_settop(L, -(1)-1));
             return;
         }
 
+
+
+
         lua_settop(L, -(1)-1);
 
+
         lua_createtable(L, 0, 0);
+
+
         lua_pushstring(L, "__pointer__");
+
+
         lua_pushlightuserdata(L, obj);
+
+
+
+
+
         lua_rawset(L, -3);
 
 
         const char* meta_name = obj->lua_get_meta_name();
+
+
         (lua_getfield(L, (-1000000 - 1000), (meta_name)));
+
         if ((lua_type(L, (-1)) == 0)) {
+
+
+
             (lua_rotate(L, (-1), -1), lua_settop(L, -(1)-1));
+
             lua_register_class(L, obj);
+
+
             (lua_getfield(L, (-1000000 - 1000), (meta_name)));
         }
+
+
+
+
+
+
+
         lua_setmetatable(L, -2);
 
 
+
+
+
         lua_pushvalue(L, -1);
+
+
+
+
+
+
         lua_rawsetp(L, -3, obj);
     }
+
+
+
+
     (lua_rotate(L, (-2), -1), lua_settop(L, -(1)-1));
 }
 
@@ -45445,28 +45517,44 @@ T lua_to_object(lua_State* L, int idx) {
 
     static_assert(has_meta_data<typename std::remove_pointer<T>::type>::value, "T should be declared export !");
 
+
     idx = lua_normal_index(L, idx);
 
+
     if ((lua_type(L, (idx)) == 5)) {
+
+
         lua_pushstring(L, "__pointer__");
+
+
         lua_rawget(L, idx);
+
         obj = (T)lua_touserdata(L, -1);
+
+
         lua_settop(L, -(1)-1);
     }
+
+
     return obj;
 }
-# 517 "../luna.h"
+# 607 "../luna.h"
 void lua_push_function(lua_State* L, lua_global_function func);
 inline void lua_push_function(lua_State* L, lua_CFunction func) { lua_pushcclosure(L, (func), 0); }
 
 template <typename T>
 void lua_push_function(lua_State* L, T func) {
+
+
+
     lua_push_function(L, lua_adapter(func));
 }
 
 template <typename T>
 void lua_register_function(lua_State* L, const char* name, T func) {
+    stackDump(L, 620, __FUNCTION__);
     lua_push_function(L, func);
+    stackDump(L, 622, __FUNCTION__);
     lua_setglobal(L, name);
 }
 
@@ -45568,7 +45656,8 @@ int del(int a, int b) {
     return a - b;
 }
 
-void stackDump(lua_State* L) {
+
+void stackDump1(lua_State* L) {
     int top = lua_gettop(L);
     printf("stack begin, total[%d]\n", top);
 
@@ -45620,39 +45709,14 @@ my_class* NewMyClass() {
     return ptr;
 }
 
-
-
-
 int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
 
     lua_register_function(L, "add", add);
-    lua_register_function(L, "del", del);
-    lua_register_function(L, "NewMyClass", NewMyClass);
-# 90 "example.cpp"
-    luaL_loadfilex(L,"./test.lua",__null);
-    stackDump(L);
-    lua_pcallk(L, (0), (0), (0), 0, __null);
-
-
-    lua_guard g(L);
-    int x, y;
-    const char* name = nullptr;
-
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl;
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func_no_such") << endl;
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func2", std::tie(), 11, 2) << endl;
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func3", std::tie(), 11, 2, 3) << endl;
-
-
-
-    cout << lua_call_table_function(L, nullptr, "myClass", "some_func0") << endl;
-
-    cout << lua_call_table_function(L, nullptr, "myClass", "func_a") << endl;
-
-    lua_close(L);
+    luaL_loadstring(L, "print(add(1+a))");
+# 113 "example.cpp"
     return 0;
 
 }

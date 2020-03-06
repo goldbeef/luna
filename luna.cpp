@@ -15,9 +15,9 @@
 #include <algorithm>
 #include "luna.h"
 
-void stackDump(lua_State* L) {
+void stackDump(lua_State* L, int line, const char* filename) {
     int top = lua_gettop(L);
-    printf("stack begin, total[%d]\n", top);
+    printf("[%s:%d]stack begin, total[%d]\n", filename, line, top);
 
     for (int i = 1; i <= top; i++) {
         int type = lua_type(L, i);
@@ -39,7 +39,7 @@ void stackDump(lua_State* L) {
     }
     printf("\n");
 
-    printf("stack end\n");
+    printf("[%s:%d]stack end\n", filename, line);
 }
 
 struct luna_function_wapper final {
@@ -62,11 +62,14 @@ static int lua_global_bridge(lua_State* L) {
 }
 
 void lua_push_function(lua_State* L, lua_global_function func) {
-    //LUA_REGISTRYINDEX.__objects__.obj
+    stackDump(L, __LINE__, __FUNCTION__);
+    //LUA_REGISTRYINDEX.__objects__.obj (table)
     lua_push_object(L, new luna_function_wapper(func));
+    stackDump(L, __LINE__, __FUNCTION__);
 
     //lua_global_bridge,
     lua_pushcclosure(L, lua_global_bridge, 1); //有一个参数
+    stackDump(L, __LINE__, __FUNCTION__);
 }
 
 int _lua_object_bridge(lua_State* L) {

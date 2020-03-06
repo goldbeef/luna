@@ -12,7 +12,8 @@ int del(int a, int b) {
     return a - b;
 }
 
-void stackDump(lua_State* L) {
+
+void stackDump1(lua_State* L) {
     int top = lua_gettop(L);
     printf("stack begin, total[%d]\n", top);
 
@@ -64,17 +65,16 @@ my_class* NewMyClass() {
     return ptr;
 }
 
-
-
-
 int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
     //导出全局函数
     lua_register_function(L, "add", add);
-    lua_register_function(L, "del", del);
-    lua_register_function(L, "NewMyClass", NewMyClass);
+    luaL_loadstring(L, "print(add(1+a))");
+
+    //lua_register_function(L, "del", del);
+    //lua_register_function(L, "NewMyClass", NewMyClass);
 
     /*
     //c++ call
@@ -85,6 +85,7 @@ int main(){
     stackDump(L);
     */
 
+    /*
     //lua call
     //调用整个文件
     luaL_loadfile(L, "./test.lua");
@@ -108,6 +109,7 @@ int main(){
     cout << lua_call_table_function(L, nullptr, "myClass", "func_a") << endl;
 
     lua_close(L);
+     */
     return 0;
 
 }
