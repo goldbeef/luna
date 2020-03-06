@@ -22,11 +22,14 @@ struct StTest {
     };
 
 int main() {
+    /*
       HELLO(test);
 
       test(0);
 
 
       cout << ((StTest*)nullptr)->a << endl;
+      */
+
       return 0;
 }

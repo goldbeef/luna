@@ -62,6 +62,7 @@ void native_to_lua(lua_State* L, T v) {
                 lua_pushnil(L);
             }
         } else {
+            stackDump(L, __LINE__, __FUNCTION__);
             lua_push_object(L, v); 
         }
     } else {
@@ -101,6 +102,7 @@ return_type call_helper(lua_State* L, class_type* obj, return_type(class_type::*
 template <typename return_type, typename... arg_types>
 lua_global_function lua_adapter(return_type(*func)(arg_types...)) {
     return [=](lua_State* L) {
+        stackDump(L, __LINE__, __FUNCTION__);
         native_to_lua(L, call_helper(L, func, std::make_index_sequence<sizeof...(arg_types)>()));
         return 1;
     };
@@ -108,7 +110,7 @@ lua_global_function lua_adapter(return_type(*func)(arg_types...)) {
 
 template <typename... arg_types>
 lua_global_function lua_adapter(void(*func)(arg_types...)) {
-    return [=](lua_State* L) {
+    return [=](lua_State* L) {//todo
         call_helper(L, func, std::make_index_sequence<sizeof...(arg_types)>());
         return 0;
     };
@@ -272,7 +274,8 @@ struct lua_member_item {
 
 template <typename T>
 int lua_member_index(lua_State* L) {
-    T* obj = lua_to_object<T*>(L, 1); //强制转换为
+    stackDump(L, __LINE__, __FUNCTION__);
+    T* obj = lua_to_object<T*>(L, 1); //强制转换为对象指针
     if (obj == nullptr) {
         lua_pushnil(L);
         return 1;
@@ -353,27 +356,52 @@ int lua_object_gc(lua_State* L) {
 
 template <typename T>
 void lua_register_class(lua_State* L, T* obj) {
+    //...,  tObj
+    stackDump(L, __LINE__, __FUNCTION__);
+
     int top = lua_gettop(L); //stack num
 
     const char* meta_name = obj->lua_get_meta_name(); //"_class_meta:"#ClassName
     lua_member_item* item = obj->lua_get_meta_data();
 
-    // ..., tObj, "_class_meta:"#ClassName
+    // ..., tObj, _G."_class_meta:"#ClassName
     luaL_newmetatable(L, meta_name);
 
-    // "_class_meta:"#ClassName, __index
+    // ..., tObj, _G."_class_meta:"#ClassName, __index
     lua_pushstring(L, "__index");
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __index， indexTab
     lua_pushcfunction(L, &lua_member_index<T>);
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __index， indexTab
+    //_G."_class_meta:"#ClassName = {_index = indexTab}
     lua_rawset(L, -3);
 
+    // ..., tObj, _G."_class_meta:"#ClassName, __newinde
+    //_G."_class_meta:"#ClassName = {_index = indexTab}
     lua_pushstring(L, "__newindex");
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex
+    //_G."_class_meta:"#ClassName = {_index = indexTab}
     lua_pushcfunction(L, &lua_member_new_index<T>);
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex
+    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
     lua_rawset(L, -3);
 
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex, __gc
+    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
     lua_pushstring(L, "__gc");
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex, __gc, gcTab
+    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
     lua_pushcfunction(L, &lua_object_gc<T>);
+
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex
+    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab, __gc = gcTab}
     lua_rawset(L, -3);
 
+    //
     while (item->name) {
         const char* name = item->name;
         // export member name "m_xxx" as "xxx"
@@ -484,7 +512,7 @@ void lua_push_object(lua_State* L, T obj) {
             // LUA_REGISTRYINDEX.__objects__, tObj
             lua_remove(L, -1);
 
-            lua_register_class(L, obj);
+            lua_register_class(L, obj); //todo
 
             // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
             luaL_getmetatable(L, meta_name);
@@ -558,6 +586,7 @@ struct has_meta_data {
 
 template <typename T>
 T lua_to_object(lua_State* L, int idx) {//伪索引
+    stackDump(L, __LINE__, __FUNCTION__);
     T obj = nullptr;
 
     static_assert(has_meta_data<typename std::remove_pointer<T>::type>::value, "T should be declared export !");
@@ -581,6 +610,7 @@ T lua_to_object(lua_State* L, int idx) {//伪索引
     }
 
     //全局函数obj
+    stackDump(L, __LINE__, __FUNCTION__);
     return obj;
 }
 

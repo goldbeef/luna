@@ -78,6 +78,7 @@ int main(){
     lua_register_function(L, "NewMyClass", NewMyClass);
     luaL_dofile(L, "./test.lua");
 
+    lua_push_object()
     /*
     //c++ call
     stackDump(L);
