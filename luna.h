@@ -393,44 +393,103 @@ void lua_push_object(lua_State* L, T obj) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, "__objects__");
     if (lua_isnil(L, -1)) {
-        lua_pop(L, 1);
-        lua_newtable(L);
+        // nil,
 
+        //
+        lua_pop(L, 1);
+        
+        // t1
         lua_newtable(L);
+        // t1, t2
+        lua_newtable(L);
+        // t1, t2, "v"
         lua_pushstring(L, "v");
+        /*
+         * t1, t2,
+         *
+         * t2 = { __mode = "v", }
+         * */
         lua_setfield(L, -2, "__mode");
+
+        /*
+         * t1
+         * t1.m --> t2
+         * */
         lua_setmetatable(L, -2);
 
+        // t1, t1
         lua_pushvalue(L, -1);
+
+        /*
+         * t1
+         * t1.m --> t2
+         * LUA_REGISTRYINDEX = {__objects__ = t}
+         */
         lua_setfield(L, LUA_REGISTRYINDEX, "__objects__");
     }
 
-    // stack: __objects__
+    // LUA_REGISTRYINDEX.__objects__
     if (lua_rawgetp(L, -1, obj) != LUA_TTABLE) {
+        //说明对象还没有完全导出来
+        //LUA_REGISTRYINDEX.__objects__, nil
         if (!_lua_set_fence(L, obj)) {
             lua_remove(L, -2);
             return;
         }
 
+        //LUA_REGISTRYINDEX.__objects__,
         lua_pop(L, 1);
 
+        //LUA_REGISTRYINDEX.__objects__, tObj
         lua_newtable(L);
+
+        //LUA_REGISTRYINDEX.__objects__, tObj, __pointer__
         lua_pushstring(L, "__pointer__");
+
+        //LUA_REGISTRYINDEX.__objects__, tObj, __pointer__, obj
         lua_pushlightuserdata(L, obj);
+
+        /*
+         * LUA_REGISTRYINDEX.__objects__, tObj
+         * tObj = {__pointer__ = obj}
+         * */
         lua_rawset(L, -3);
 
-        // stack: __objects__, tab
-        const char* meta_name = obj->lua_get_meta_name();
+        // LUA_REGISTRYINDEX.__objects__, tObj
+        const char* meta_name = obj->lua_get_meta_name(); //_G."_class_meta:"#ClassName.meta
+        // LUA_REGISTRYINDEX.__objects__, tObj, nil for tabb
         luaL_getmetatable(L, meta_name);
+
         if (lua_isnil(L, -1)) {
+            // LUA_REGISTRYINDEX.__objects__, tObj, nil
+
+            // LUA_REGISTRYINDEX.__objects__, tObj
             lua_remove(L, -1);
+
+
             lua_register_class(L, obj);
             luaL_getmetatable(L, meta_name);
         }
+        // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
+
+
+        /*
+         * LUA_REGISTRYINDEX.__objects__, tObj,
+         tObj.meta = _G."_class_meta:"#ClassName.meta
+        */
         lua_setmetatable(L, -2);
 
-        // stack: __objects__, tab
+        /*
+        * LUA_REGISTRYINDEX.__objects__, tObj, tObj
+        * tObj.meta = _G."_class_meta:"#ClassName.meta
+        */
         lua_pushvalue(L, -1);
+
+        /*
+        * LUA_REGISTRYINDEX.__objects__
+        * tObj.meta = _G."_class_meta:"#ClassName.meta
+        * LUA_REGISTRYINDEX.__objects__.tObj = tObj
+        */
         lua_rawsetp(L, -3, obj);
     }
     lua_remove(L, -2);
