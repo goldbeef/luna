@@ -45359,12 +45359,14 @@ void lua_register_class(lua_State* L, T* obj) {
 
 template <typename T>
 void lua_push_object(lua_State* L, T obj) {
+    stackDump(L, 395, __FUNCTION__);
     if (obj == nullptr) {
         lua_pushnil(L);
         return;
     }
 
     lua_getfield(L, (-1000000 - 1000), "__objects__");
+    stackDump(L, 402, __FUNCTION__);
     if ((lua_type(L, (-1)) == 0)) {
 
 
@@ -45393,12 +45395,13 @@ void lua_push_object(lua_State* L, T obj) {
 
 
         lua_pushvalue(L, -1);
-# 437 "../luna.h"
+# 439 "../luna.h"
         lua_setfield(L, (-1000000 - 1000), "__objects__");
     }
 
 
 
+    stackDump(L, 444, __FUNCTION__);
     if (lua_rawgetp(L, -1, obj) != 5) {
 
 
@@ -45468,11 +45471,13 @@ void lua_push_object(lua_State* L, T obj) {
 
         lua_rawsetp(L, -3, obj);
     }
+    stackDump(L, 514, __FUNCTION__);
 
 
 
 
     (lua_rotate(L, (-2), -1), lua_settop(L, -(1)-1));
+    stackDump(L, 520, __FUNCTION__);
 }
 
 template <typename T>
@@ -45538,7 +45543,7 @@ T lua_to_object(lua_State* L, int idx) {
 
     return obj;
 }
-# 607 "../luna.h"
+# 612 "../luna.h"
 void lua_push_function(lua_State* L, lua_global_function func);
 inline void lua_push_function(lua_State* L, lua_CFunction func) { lua_pushcclosure(L, (func), 0); }
 
@@ -45552,9 +45557,9 @@ void lua_push_function(lua_State* L, T func) {
 
 template <typename T>
 void lua_register_function(lua_State* L, const char* name, T func) {
-    stackDump(L, 620, __FUNCTION__);
+    stackDump(L, 625, __FUNCTION__);
     lua_push_function(L, func);
-    stackDump(L, 622, __FUNCTION__);
+    stackDump(L, 627, __FUNCTION__);
     lua_setglobal(L, name);
 }
 
@@ -45714,9 +45719,14 @@ int main(){
     luaL_openlibs(L);
 
 
-    lua_register_function(L, "add", add);
-    luaL_loadstring(L, "print(add(1+a))");
-# 113 "example.cpp"
+
+
+
+
+
+    lua_register_function(L, "NewMyClass", NewMyClass);
+    (luaL_loadfilex(L,"./test.lua",__null) || lua_pcallk(L, (0), ((-1)), (0), 0, __null));
+# 115 "example.cpp"
     return 0;
 
 }

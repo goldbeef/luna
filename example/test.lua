@@ -1,6 +1,9 @@
 --访问导出的全局函数
+--[[
 print(add(1, 2))
 print(del(1, 2))
+--]]
+
 
 --访问导出的类的成员/方法
 myClass = NewMyClass()
