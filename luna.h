@@ -140,7 +140,9 @@ lua_object_function lua_adapter(return_type(T::*func)(arg_types...) const) {
 template <typename T, typename... arg_types>
 lua_object_function lua_adapter(void(T::*func)(arg_types...)) {
     return [=](void* obj, lua_State* L) {
+        stackDump(L, __LINE__, __FUNCTION__);
         call_helper(L, (T*)obj, func, std::make_index_sequence<sizeof...(arg_types)>());
+        stackDump(L, __LINE__, __FUNCTION__);
         return 0;
     };
 }
@@ -175,93 +177,146 @@ int _lua_object_bridge(lua_State* L);
 
 struct lua_export_helper {
     static luna_member_wrapper getter(const bool&) {
-        return [](lua_State* L, void*, char* addr){ lua_pushboolean(L, *(bool*)addr); };
+        return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+            lua_pushboolean(L, *(bool*)addr);
+            stackDump(L, __LINE__, __FUNCTION__);
+        };
     }
 
     static luna_member_wrapper setter(const bool&) {
-        return [](lua_State* L, void*, char* addr){ *(bool*)addr = lua_toboolean(L, -1); };
+        return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+            *(bool*)addr = lua_toboolean(L, -1);
+            stackDump(L, __LINE__, __FUNCTION__);
+        };
     }
 
 	template <typename T>
 	static typename std::enable_if<std::is_integral<T>::value, luna_member_wrapper>::type getter(const T&) {
-		return [](lua_State* L, void*, char* addr){ lua_pushinteger(L, (lua_Integer)*(T*)addr); };
+		return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    lua_pushinteger(L, (lua_Integer)*(T*)addr);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
     }
 
 	template <typename T>
 	static typename std::enable_if<std::is_integral<T>::value, luna_member_wrapper>::type setter(const T&) {
-		return [](lua_State* L, void*, char* addr){ *(T*)addr = (T)lua_tonumber(L, -1); };
+		return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    *(T*)addr = (T)lua_tonumber(L, -1);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
     }    
 
 	template <typename T>
 	static typename std::enable_if<std::is_floating_point<T>::value, luna_member_wrapper>::type getter(const T&) {
-		return [](lua_State* L, void*, char* addr){ lua_pushnumber(L, (lua_Number)*(T*)addr); };
+		return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    lua_pushnumber(L, (lua_Number)*(T*)addr);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
     }
 
 	template <typename T>
 	static typename std::enable_if<std::is_floating_point<T>::value, luna_member_wrapper>::type setter(const T&) {
-		return [](lua_State* L, void*, char* addr){ *(T*)addr = (T)lua_tonumber(L, -1); };
+		return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    *(T*)addr = (T)lua_tonumber(L, -1);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
     }    
 
 	static luna_member_wrapper getter(const std::string&) {
 	    return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
             const std::string& str = *(std::string*)addr;
-            lua_pushlstring(L, str.c_str(), str.size()); 
+            lua_pushlstring(L, str.c_str(), str.size());
+            stackDump(L, __LINE__, __FUNCTION__);
         };
 	}
 
 	static luna_member_wrapper setter(const std::string&) {
         return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
             size_t len = 0;
             const char* str = lua_tolstring(L, -1, &len);
             if (str != nullptr) {
                 *(std::string*)addr = std::string(str, len);                        
             }
+            stackDump(L, __LINE__, __FUNCTION__);
 		};
 	}
 
 	template <size_t Size>
 	static luna_member_wrapper getter(const char (&)[Size]) {
-		return [](lua_State* L, void*, char* addr){ lua_pushstring(L, addr);};
+		return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    lua_pushstring(L, addr);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
 	}
 
 	template <size_t Size>
 	static luna_member_wrapper setter(const char (&)[Size]) {
-        return [](lua_State* L, void*, char* addr){ 
+        return [](lua_State* L, void*, char* addr){
+            stackDump(L, __LINE__, __FUNCTION__);
             size_t len = 0;
             const char* str = lua_tolstring(L, -1, &len);
             if (str != nullptr && len < Size) {
                 memcpy(addr, str, len);
                 addr[len] = '\0';                    
             }
+            stackDump(L, __LINE__, __FUNCTION__);
         };
 	}
 	
 	template <typename return_type, typename T, typename... arg_types>
 	static luna_member_wrapper getter(return_type(T::*func)(arg_types...)) {
-		return [adapter=lua_adapter(func)](lua_State* L, void* obj, char*) mutable { 
+		return [adapter=lua_adapter(func)](lua_State* L, void* obj, char*) mutable {
+		        //table, 'func_a'
+                stackDump(L, __LINE__, __FUNCTION__);
+
+                //table, 'func_a', obj
 				lua_pushlightuserdata(L, obj);
+                //table, 'func_a', obj, adapter(global Func)
 				lua_pushlightuserdata(L, &adapter);
+
+                //table, 'func_a', _lua_object_bridge
+                //_lua_object_bridge(obj, adapter)
 				lua_pushcclosure(L, _lua_object_bridge, 2);
-			};				
+                stackDump(L, __LINE__, __FUNCTION__);
+			};
 	}
 
 	template <typename return_type, typename T, typename... arg_types>
 	static luna_member_wrapper setter(return_type(T::*func)(arg_types...)) {
-		return [=](lua_State* L, void* obj, char*){ lua_rawset(L, -3); };				
-	}    
+		return [=](lua_State* L, void* obj, char*){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    lua_rawset(L, -3);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
+	}
 
 	template <typename return_type, typename T, typename... arg_types>
 	static luna_member_wrapper getter(return_type(T::*func)(arg_types...) const) {
-		return [adapter=lua_adapter(func)](lua_State* L, void* obj, char*) mutable { 
+		return [adapter=lua_adapter(func)](lua_State* L, void* obj, char*) mutable {
+            stackDump(L, __LINE__, __FUNCTION__);
 				lua_pushlightuserdata(L, obj);
 				lua_pushlightuserdata(L, &adapter);
 				lua_pushcclosure(L, _lua_object_bridge, 2);
-			};				
+            stackDump(L, __LINE__, __FUNCTION__);
+			};
 	}
 
 	template <typename return_type, typename T, typename... arg_types>
 	static luna_member_wrapper setter(return_type(T::*func)(arg_types...) const) {
-		return [=](lua_State* L, void* obj, char*){ lua_rawset(L, -3); };				
+		return [=](lua_State* L, void* obj, char*){
+            stackDump(L, __LINE__, __FUNCTION__);
+		    lua_rawset(L, -3);
+            stackDump(L, __LINE__, __FUNCTION__);
+		};
 	}        
 };
 
@@ -274,7 +329,7 @@ struct lua_member_item {
 
 template <typename T>
 int lua_member_index(lua_State* L) {
-    //obj, key
+    //tObj, key
     stackDump(L, __LINE__, __FUNCTION__);
     T* obj = lua_to_object<T*>(L, 1); //强制转换为对象指针
     if (obj == nullptr) {
@@ -282,7 +337,7 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
-    //obj, key
+    //tObj, key
     const char* key = lua_tostring(L, 2);
     const char* meta_name = obj->lua_get_meta_name();
     if (key == nullptr || meta_name == nullptr) {
@@ -290,32 +345,32 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
-    //obj, key, _G."_class_meta:"#ClassName
+    //tObj, key, _G."_class_meta:"#ClassName
     luaL_getmetatable(L, meta_name);
     stackDump(L, __LINE__, __FUNCTION__);
 
-    //obj, key, _G."_class_meta:"#ClassName, key,
+    //tObj, key, _G."_class_meta:"#ClassName, key,
     lua_pushstring(L, key);
     stackDump(L, __LINE__, __FUNCTION__);
 
-    //obj, key, _G."_class_meta:"#ClassName, _G."_class_meta:"#ClassName.key(item)
+    //tObj, key, _G."_class_meta:"#ClassName, _G."_class_meta:"#ClassName.key(item - userdata)
     lua_rawget(L, -2);
     stackDump(L, __LINE__, __FUNCTION__);
 
-    //
+    //tObj, key, _G."_class_meta:"#ClassName, _G."_class_meta:"#ClassName.key(item - userdata)
     auto item = (lua_member_item*)lua_touserdata(L, -1);
     if (item == nullptr) {
         lua_pushnil(L);
         return 1;
     }
 
-    //obj, key,
+    //tObj, key,
     lua_settop(L, 2);
     stackDump(L, __LINE__, __FUNCTION__);
     item->getter(L, obj, (char*)obj + item->offset); //lua_export_helper::getter(&class_type::Method)
     stackDump(L, __LINE__, __FUNCTION__);
     //压入数据
-    //obj, key, val
+    //tObj, key, val
     return 1;
 }
 
@@ -677,7 +732,7 @@ T lua_to_object(lua_State* L, int idx) {//伪索引
         lua_pop(L, 1);
     }
 
-    //全局函数obj
+    //tObj, name
     stackDump(L, __LINE__, __FUNCTION__);
     return obj;
 }

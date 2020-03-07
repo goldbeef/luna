@@ -7,8 +7,13 @@ print(del(1, 2))
 
 --访问导出的类的成员/方法
 myClass = NewMyClass()
+print("-----------------------------")
 print(myClass.func_a("hello", 10))
 print(type(myClass))
+print("-----------------------------")
+print(myClass.name)
+print("-----------------------------")
+
 
 for k, v in pairs(myClass) do
     print("tObj", k ,v)
