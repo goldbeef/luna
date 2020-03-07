@@ -18,6 +18,16 @@ for k, v in pairs(getmetatable(myClass)) do
     print("meta", k ,v)
 end
 
+--[[
+meta = getmetatable("_class_meta:my_class")
+for k, v in pairs(meta) do
+    print("meta1", k ,v)
+    for k2, v2 in pairs(v) do
+        print("meta2", k2 ,v2)
+    end
+end
+--]]
+
 --print(myClass.func_a(nil, 10))
 --print(myClass.func_a(nil, nil))
 --print(myClass.name)
