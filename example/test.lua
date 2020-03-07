@@ -8,13 +8,13 @@ print(del(1, 2))
 --访问导出的类的成员/方法
 myClass = NewMyClass()
 print(myClass.func_a("hello", 10))
-print(typeof(myClass))
+print(type(myClass))
 
-for k, v in paris(myClass) do
-    print("hello", k ,v)
+for k, v in pairs(myClass) do
+    print("tObj", k ,v)
 end
 
-for k, v in paris(getmetatable(myClass)) do
+for k, v in pairs(getmetatable(myClass)) do
     print("meta", k ,v)
 end
 
