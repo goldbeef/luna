@@ -17,11 +17,23 @@ print(myClass.name)
 print("-----------------------------")
 
 
+print("-----------------------------")
 for k, v in pairs(myClass) do
     print("tObj", k ,v)
 end
 
 for k, v in pairs(getmetatable(myClass)) do
+    print("meta", k ,v)
+end
+print("-----------------------------")
+
+
+myClass2 = NewMyClass()
+for k, v in pairs(myClass2) do
+    print("tObj", k ,v)
+end
+
+for k, v in pairs(getmetatable(myClass2)) do
     print("meta", k ,v)
 end
 
