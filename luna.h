@@ -376,6 +376,8 @@ int lua_member_index(lua_State* L) {
 
 template <typename T>
 int lua_member_new_index(lua_State* L) {
+    //tObj, mem_name, value
+    stackDump(L, __LINE__, __FUNCTION__);
     T* obj = lua_to_object<T*>(L, 1);
     if (obj == nullptr)
         return 0;
@@ -385,20 +387,40 @@ int lua_member_new_index(lua_State* L) {
     if (key == nullptr || meta_name == nullptr)
         return 0;
 
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //tObj, mem_name, value, G._class_meta:my_class
     luaL_getmetatable(L, meta_name);
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //tObj, mem_name, value, G._class_meta:my_class, mem_name
     lua_pushvalue(L, 2);
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //tObj, mem_name, value, G._class_meta:my_class, G._class_meta:my_class.mem_name(item)
+    /*
+     *  _G."_class_meta:"#ClassName = {__index = indexTab, __newindex = newindexTab, __gc = gcTab
+         *              mem_name1 = item1,
+         *              mem_name2 = item2,
+         *              }
+     */
     lua_rawget(L, -2);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     auto item = (lua_member_item*)lua_touserdata(L, -1);
     lua_pop(L, 2);
+    stackDump(L, __LINE__, __FUNCTION__);
     if (item == nullptr) {
         lua_rawset(L, -3);
         return 0;
     }
 
     if (item->setter) {
+        stackDump(L, __LINE__, __FUNCTION__);
         item->setter(L, obj, (char*)obj + item->offset);
+        stackDump(L, __LINE__, __FUNCTION__);
     }
+    stackDump(L, __LINE__, __FUNCTION__);
     return 0;
 }
 

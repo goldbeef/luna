@@ -27,7 +27,6 @@ for k, v in pairs(getmetatable(myClass)) do
 end
 print("-----------------------------")
 
-
 myClass2 = NewMyClass()
 for k, v in pairs(myClass2) do
     print("tObj", k ,v)
@@ -37,8 +36,16 @@ for k, v in pairs(getmetatable(myClass2)) do
     print("meta", k ,v)
 end
 
---[[
+
+print("-----------------------------")
+print("setting, begin")
+myClass2.name = "hello1"
+print("setting, end")
+print(myClass2.name)
+
 meta = getmetatable("_class_meta:my_class")
+print(meta.name)
+--[[
 for k, v in pairs(meta) do
     print("meta1", k ,v)
     for k2, v2 in pairs(v) do
