@@ -80,6 +80,7 @@ int _lua_object_bridge(lua_State* L) {
     lua_object_function* func = (lua_object_function*)lua_touserdata(L, lua_upvalueindex(2));
     stackDump(L, __LINE__, __FUNCTION__);
     if (obj != nullptr && func != nullptr) {
+        stackDump(L, __LINE__, __FUNCTION__);
         return (*func)(obj, L);
     }
     return 0;
