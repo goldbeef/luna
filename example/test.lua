@@ -11,6 +11,8 @@ print("-----------------------------")
 print(myClass.func_a("hello", 10))
 print(type(myClass))
 print("-----------------------------")
+print(myClass.func_a)
+print("-----------------------------")
 print(myClass.name)
 print("-----------------------------")
 
