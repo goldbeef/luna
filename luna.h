@@ -367,7 +367,7 @@ int lua_member_index(lua_State* L) {
     //tObj, key,
     lua_settop(L, 2);
     stackDump(L, __LINE__, __FUNCTION__);
-    item->getter(L, obj, (char*)obj + item->offset); //lua_export_helper::getter(&class_type::Method)
+    item->getter(L, obj, (char*)obj + item->offset); //lua_export_helper::getter(&class_type::Method/member)
     stackDump(L, __LINE__, __FUNCTION__);
     //压入数据
     //tObj, key, val
@@ -444,7 +444,7 @@ void lua_register_class(lua_State* L, T* obj) {
     lua_pushstring(L, "__index");
     stackDump(L, __LINE__, __FUNCTION__);
 
-    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName, __index， indexFunc
+    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName, __index， indexFunc(_lua_object_bridge)
     lua_pushcfunction(L, &lua_member_index<T>);
     stackDump(L, __LINE__, __FUNCTION__);
 
