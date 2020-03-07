@@ -274,6 +274,7 @@ struct lua_member_item {
 
 template <typename T>
 int lua_member_index(lua_State* L) {
+    //obj, key
     stackDump(L, __LINE__, __FUNCTION__);
     T* obj = lua_to_object<T*>(L, 1); //强制转换为对象指针
     if (obj == nullptr) {
@@ -281,6 +282,7 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
+    //obj, key
     const char* key = lua_tostring(L, 2);
     const char* meta_name = obj->lua_get_meta_name();
     if (key == nullptr || meta_name == nullptr) {
@@ -288,18 +290,32 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
+    //obj, key, _G."_class_meta:"#ClassName
     luaL_getmetatable(L, meta_name);
-    lua_pushstring(L, key);
-    lua_rawget(L, -2);
+    stackDump(L, __LINE__, __FUNCTION__);
 
+    //obj, key, _G."_class_meta:"#ClassName, key,
+    lua_pushstring(L, key);
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //obj, key, _G."_class_meta:"#ClassName, _G."_class_meta:"#ClassName.key(item)
+    lua_rawget(L, -2);
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //
     auto item = (lua_member_item*)lua_touserdata(L, -1);
     if (item == nullptr) {
         lua_pushnil(L);
         return 1;
     }
 
+    //obj, key,
     lua_settop(L, 2);
-    item->getter(L, obj, (char*)obj + item->offset);
+    stackDump(L, __LINE__, __FUNCTION__);
+    item->getter(L, obj, (char*)obj + item->offset); //lua_export_helper::getter(&class_type::Method)
+    stackDump(L, __LINE__, __FUNCTION__);
+    //压入数据
+    //obj, key, val
     return 1;
 }
 
@@ -356,7 +372,7 @@ int lua_object_gc(lua_State* L) {
 
 template <typename T>
 void lua_register_class(lua_State* L, T* obj) {
-    //...,  tObj
+    //LUA_REGISTRYINDEX.__objects__,  tObj
     stackDump(L, __LINE__, __FUNCTION__);
 
     int top = lua_gettop(L); //stack num
@@ -364,45 +380,56 @@ void lua_register_class(lua_State* L, T* obj) {
     const char* meta_name = obj->lua_get_meta_name(); //"_class_meta:"#ClassName
     lua_member_item* item = obj->lua_get_meta_data();
 
-    // ..., tObj, _G."_class_meta:"#ClassName
+    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName
+    //_G."_class_meta:"#ClassName {__name = meta_name}
     luaL_newmetatable(L, meta_name);
+    stackDump(L, __LINE__, __FUNCTION__);
 
-    // ..., tObj, _G."_class_meta:"#ClassName, __index
+    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName, __index
     lua_pushstring(L, "__index");
+    stackDump(L, __LINE__, __FUNCTION__);
 
-    // ..., tObj, _G."_class_meta:"#ClassName, __index， indexTab
+    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName, __index， indexFunc
     lua_pushcfunction(L, &lua_member_index<T>);
+    stackDump(L, __LINE__, __FUNCTION__);
 
-    // ..., tObj, _G."_class_meta:"#ClassName,
-    //_G."_class_meta:"#ClassName = {_index = indexTab}
+    // LUA_REGISTRYINDEX.__objects__, tObj, _G."_class_meta:"#ClassName,
+    //_G."_class_meta:"#ClassName = {_index = indexFunc}
     lua_rawset(L, -3);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // ..., tObj, _G."_class_meta:"#ClassName, __newindex
     //_G."_class_meta:"#ClassName = {_index = indexTab}
     lua_pushstring(L, "__newindex");
+    stackDump(L, __LINE__, __FUNCTION__);
 
-    // ..., tObj, _G."_class_meta:"#ClassName, __newindex, newIndexTab
-    //_G."_class_meta:"#ClassName = {_index = indexTab}
+    // ..., tObj, _G."_class_meta:"#ClassName, __newindex, newIndexFunc
+    //_G."_class_meta:"#ClassName = {_index = newIndexFunc}
     lua_pushcfunction(L, &lua_member_new_index<T>);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // ..., tObj, _G."_class_meta:"#ClassName,
-    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
+    //_G."_class_meta:"#ClassName = {_index = indexFunc, __newindex = newIndexFunc}
     lua_rawset(L, -3);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // ..., tObj, _G."_class_meta:"#ClassName,  __gc
-    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
+    //_G."_class_meta:"#ClassName = {_index = indexFunc, __newindex = newIndexFunc}
     lua_pushstring(L, "__gc");
+    stackDump(L, __LINE__, __FUNCTION__);
 
-    // ..., tObj, _G."_class_meta:"#ClassName,  __gc, gcTab
-    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab}
+    // ..., tObj, _G."_class_meta:"#ClassName,  __gc, gcFunc
+    //_G."_class_meta:"#ClassName = {_index = indexFunc, __newindex = newIndexFunc}
     lua_pushcfunction(L, &lua_object_gc<T>);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // ..., tObj, _G."_class_meta:"#ClassName,
-    //_G."_class_meta:"#ClassName = {_index = indexTab, __newindex = newindexTab, __gc = gcTab}
+    //_G."_class_meta:"#ClassName = {_index = indexFunc, __newindex = newIndexFunc, __gc = gcFunc}
     lua_rawset(L, -3);
+    stackDump(L, __LINE__, __FUNCTION__);
 
     // ..., tObj, _G."_class_meta:"#ClassName,
-    //_G."_class_meta:"#ClassName = {__index = indexTab, __newindex = newindexTab, __gc = gcTab}
+    //_G."_class_meta:"#ClassName = {__index = indexFunc, __newindex = newIndexFunc, __gc = gcFunc}
     //设置成员
     while (item->name) {
         const char* name = item->name;
@@ -414,10 +441,12 @@ void lua_register_class(lua_State* L, T* obj) {
         // ..., tObj, _G."_class_meta:"#ClassName, member_name
         //_G."_class_meta:"#ClassName = {__index = indexTab, __newindex = newindexTab, __gc = gcTab}
         lua_pushstring(L, name);
+        stackDump(L, __LINE__, __FUNCTION__);
 
         // ..., tObj, _G."_class_meta:"#ClassName, member_name, item
         //_G."_class_meta:"#ClassName = {__index = indexTab, __newindex = newindexTab, __gc = gcTab}
         lua_pushlightuserdata(L, item);
+        stackDump(L, __LINE__, __FUNCTION__);
 
         // ..., tObj, _G."_class_meta:"#ClassName
         /*
@@ -427,6 +456,7 @@ void lua_register_class(lua_State* L, T* obj) {
          *              }
          * */
         lua_rawset(L, -3);
+        stackDump(L, __LINE__, __FUNCTION__);
         item++;
     }
 
@@ -543,10 +573,13 @@ void lua_push_object(lua_State* L, T obj) {
              *              mem_name2 = item2,
              *              }
              * */
-            lua_register_class(L, obj); //todo
+            stackDump(L, __LINE__, __FUNCTION__);
+            lua_register_class(L, obj);
+            stackDump(L, __LINE__, __FUNCTION__);
 
             // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
             luaL_getmetatable(L, meta_name);
+            stackDump(L, __LINE__, __FUNCTION__);
         }
 
         // LUA_REGISTRYINDEX.__objects__, tObj,  _G."_class_meta:"#ClassName.meta
@@ -554,6 +587,10 @@ void lua_push_object(lua_State* L, T obj) {
         /*
          * LUA_REGISTRYINDEX.__objects__, tObj,
          tObj.meta = _G."_class_meta:"#ClassName.meta
+         _G."_class_meta:"#ClassName = {__index = indexTab, __newindex = newindexTab, __gc = gcTab
+                           mem_name1 = item1,
+                           mem_name2 = item2,
+                          }
         */
         lua_setmetatable(L, -2);
 

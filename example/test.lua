@@ -8,10 +8,21 @@ print(del(1, 2))
 --访问导出的类的成员/方法
 myClass = NewMyClass()
 print(myClass.func_a("hello", 10))
-print(myClass.func_a(nil, 10))
-print(myClass.func_a(nil, nil))
-print(myClass.name)
+print(typeof(myClass))
 
+for k, v in paris(myClass) do
+    print("hello", k ,v)
+end
+
+for k, v in paris(getmetatable(myClass)) do
+    print("meta", k ,v)
+end
+
+--print(myClass.func_a(nil, 10))
+--print(myClass.func_a(nil, nil))
+--print(myClass.name)
+
+--[[
 function myClass.some_func0()
     print("myClass.some_func0")
 end
@@ -32,3 +43,4 @@ end
 function s2s.some_func3(var1, var2, var3)
     print(string.format("s2s.some_func3, [%g], [%g], [%g]", var1, var2, var3))
 end
+--]]

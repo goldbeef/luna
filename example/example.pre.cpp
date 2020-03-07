@@ -45029,6 +45029,7 @@ void native_to_lua(lua_State* L, T v) {
                 lua_pushnil(L);
             }
         } else {
+            stackDump(L, 65, __FUNCTION__);
             lua_push_object(L, v);
         }
     } else {
@@ -45068,6 +45069,7 @@ return_type call_helper(lua_State* L, class_type* obj, return_type(class_type::*
 template <typename return_type, typename... arg_types>
 lua_global_function lua_adapter(return_type(*func)(arg_types...)) {
     return [=](lua_State* L) {
+        stackDump(L, 105, __FUNCTION__);
         native_to_lua(L, call_helper(L, func, std::make_index_sequence<sizeof...(arg_types)>()));
         return 1;
     };
@@ -45239,11 +45241,14 @@ struct lua_member_item {
 
 template <typename T>
 int lua_member_index(lua_State* L) {
+
+    stackDump(L, 278, __FUNCTION__);
     T* obj = lua_to_object<T*>(L, 1);
     if (obj == nullptr) {
         lua_pushnil(L);
         return 1;
     }
+
 
     const char* key = lua_tolstring(L, (2), __null);
     const char* meta_name = obj->lua_get_meta_name();
@@ -45252,9 +45257,18 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
+
     (lua_getfield(L, (-1000000 - 1000), (meta_name)));
+    stackDump(L, 295, __FUNCTION__);
+
+
     lua_pushstring(L, key);
+    stackDump(L, 299, __FUNCTION__);
+
+
     lua_rawget(L, -2);
+    stackDump(L, 303, __FUNCTION__);
+
 
     auto item = (lua_member_item*)lua_touserdata(L, -1);
     if (item == nullptr) {
@@ -45262,8 +45276,13 @@ int lua_member_index(lua_State* L) {
         return 1;
     }
 
+
     lua_settop(L, 2);
+    stackDump(L, 314, __FUNCTION__);
     item->getter(L, obj, (char*)obj + item->offset);
+    stackDump(L, 316, __FUNCTION__);
+
+
     return 1;
 }
 
@@ -45320,26 +45339,64 @@ int lua_object_gc(lua_State* L) {
 
 template <typename T>
 void lua_register_class(lua_State* L, T* obj) {
+
+    stackDump(L, 376, __FUNCTION__);
+
     int top = lua_gettop(L);
 
     const char* meta_name = obj->lua_get_meta_name();
     lua_member_item* item = obj->lua_get_meta_data();
 
 
+
     luaL_newmetatable(L, meta_name);
+    stackDump(L, 386, __FUNCTION__);
 
 
     lua_pushstring(L, "__index");
+    stackDump(L, 390, __FUNCTION__);
+
+
     lua_pushcclosure(L, (&lua_member_index<T>), 0);
+    stackDump(L, 394, __FUNCTION__);
+
+
+
     lua_rawset(L, -3);
+    stackDump(L, 399, __FUNCTION__);
+
+
 
     lua_pushstring(L, "__newindex");
+    stackDump(L, 404, __FUNCTION__);
+
+
+
     lua_pushcclosure(L, (&lua_member_new_index<T>), 0);
+    stackDump(L, 409, __FUNCTION__);
+
+
+
     lua_rawset(L, -3);
+    stackDump(L, 414, __FUNCTION__);
+
+
 
     lua_pushstring(L, "__gc");
+    stackDump(L, 419, __FUNCTION__);
+
+
+
     lua_pushcclosure(L, (&lua_object_gc<T>), 0);
+    stackDump(L, 424, __FUNCTION__);
+
+
+
     lua_rawset(L, -3);
+    stackDump(L, 429, __FUNCTION__);
+
+
+
 
     while (item->name) {
         const char* name = item->name;
@@ -45348,25 +45405,43 @@ void lua_register_class(lua_State* L, T* obj) {
         if (name[0] == 'm' && name[1] == '_')
             name += 2;
 
+
+
         lua_pushstring(L, name);
+        stackDump(L, 444, __FUNCTION__);
+
+
+
         lua_pushlightuserdata(L, item);
+        stackDump(L, 449, __FUNCTION__);
+# 458 "../luna.h"
         lua_rawset(L, -3);
+        stackDump(L, 459, __FUNCTION__);
         item++;
     }
 
+    stackDump(L, 463, __FUNCTION__);
+
+
+
+
+
+
+
     lua_settop(L, top);
+    stackDump(L, 472, __FUNCTION__);
 }
 
 template <typename T>
 void lua_push_object(lua_State* L, T obj) {
-    stackDump(L, 395, __FUNCTION__);
+    stackDump(L, 477, __FUNCTION__);
     if (obj == nullptr) {
         lua_pushnil(L);
         return;
     }
 
     lua_getfield(L, (-1000000 - 1000), "__objects__");
-    stackDump(L, 402, __FUNCTION__);
+    stackDump(L, 484, __FUNCTION__);
     if ((lua_type(L, (-1)) == 0)) {
 
 
@@ -45395,13 +45470,13 @@ void lua_push_object(lua_State* L, T obj) {
 
 
         lua_pushvalue(L, -1);
-# 439 "../luna.h"
+# 521 "../luna.h"
         lua_setfield(L, (-1000000 - 1000), "__objects__");
     }
 
 
 
-    stackDump(L, 444, __FUNCTION__);
+    stackDump(L, 526, __FUNCTION__);
     if (lua_rawgetp(L, -1, obj) != 5) {
 
 
@@ -45443,19 +45518,16 @@ void lua_push_object(lua_State* L, T obj) {
 
 
             (lua_rotate(L, (-1), -1), lua_settop(L, -(1)-1));
-
+# 576 "../luna.h"
+            stackDump(L, 576, __FUNCTION__);
             lua_register_class(L, obj);
+            stackDump(L, 578, __FUNCTION__);
 
 
             (lua_getfield(L, (-1000000 - 1000), (meta_name)));
+            stackDump(L, 582, __FUNCTION__);
         }
-
-
-
-
-
-
-
+# 595 "../luna.h"
         lua_setmetatable(L, -2);
 
 
@@ -45471,13 +45543,13 @@ void lua_push_object(lua_State* L, T obj) {
 
         lua_rawsetp(L, -3, obj);
     }
-    stackDump(L, 514, __FUNCTION__);
+    stackDump(L, 610, __FUNCTION__);
 
 
 
 
     (lua_rotate(L, (-2), -1), lua_settop(L, -(1)-1));
-    stackDump(L, 520, __FUNCTION__);
+    stackDump(L, 616, __FUNCTION__);
 }
 
 template <typename T>
@@ -45518,6 +45590,7 @@ struct has_meta_data {
 
 template <typename T>
 T lua_to_object(lua_State* L, int idx) {
+    stackDump(L, 657, __FUNCTION__);
     T obj = nullptr;
 
     static_assert(has_meta_data<typename std::remove_pointer<T>::type>::value, "T should be declared export !");
@@ -45541,9 +45614,10 @@ T lua_to_object(lua_State* L, int idx) {
     }
 
 
+    stackDump(L, 681, __FUNCTION__);
     return obj;
 }
-# 612 "../luna.h"
+# 710 "../luna.h"
 void lua_push_function(lua_State* L, lua_global_function func);
 inline void lua_push_function(lua_State* L, lua_CFunction func) { lua_pushcclosure(L, (func), 0); }
 
@@ -45557,9 +45631,9 @@ void lua_push_function(lua_State* L, T func) {
 
 template <typename T>
 void lua_register_function(lua_State* L, const char* name, T func) {
-    stackDump(L, 625, __FUNCTION__);
+    stackDump(L, 723, __FUNCTION__);
     lua_push_function(L, func);
-    stackDump(L, 627, __FUNCTION__);
+    stackDump(L, 725, __FUNCTION__);
     lua_setglobal(L, name);
 }
 
