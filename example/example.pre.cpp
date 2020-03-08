@@ -45894,12 +45894,10 @@ int main(){
 
     lua_register_function(L, "NewMyClass", NewMyClass);
     (luaL_loadfilex(L,"./test.lua",__null) || lua_pcallk(L, (0), ((-1)), (0), 0, __null));
-# 135 "example.cpp"
+# 143 "example.cpp"
     printf("c++-------------------------------\n");
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl;
+    cout << lua_call_table_function(L, nullptr, "myClass", "some_func0") << endl;
     printf("c++-------------------------------\n");
-
-
     return 0;
 
 }

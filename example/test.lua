@@ -107,11 +107,11 @@ end
 --print(myClass.func_a(nil, nil))
 --print(myClass.name)
 
---[[
 function myClass.some_func0()
     print("myClass.some_func0")
 end
 
+--[[
 function myClass.func_a()
     print("myClass.func_a")
 end

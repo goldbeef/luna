@@ -132,11 +132,17 @@ int main(){
     */
 
     //调用全局表中的函数
+    /*
     printf("c++-------------------------------\n");
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
     printf("c++-------------------------------\n");
-    //lua_call_table_function( )
+     */
+
+    //调用对象中附加的函数
     //lua_call_object_function()
+    printf("c++-------------------------------\n");
+    cout << lua_call_table_function(L, nullptr, "myClass", "some_func0") << endl; //true
+    printf("c++-------------------------------\n");
     return 0;
 
 }
