@@ -43,16 +43,35 @@ myClass2.name = "hello1"
 print("setting, end")
 print(myClass2.name)
 
-meta = getmetatable("_class_meta:my_class")
-print(meta.name)
---[[
-for k, v in pairs(meta) do
-    print("meta1", k ,v)
-    for k2, v2 in pairs(v) do
-        print("meta2", k2 ,v2)
-    end
+
+print("-----------------------------")
+registTbl = debug.getregistry()
+classMeta = registTbl["_class_meta:my_class"]
+for k, v in pairs(classMeta) do
+   print("classMeta", k, v)
 end
---]]
+
+print("-----------------------------")
+wrapperMeta = registTbl["_class_meta:luna_function_wapper"]
+for k, v in pairs(wrapperMeta) do
+   print("wrapperMeta", k, v)
+end
+
+print("-----------------------------")
+objects = registTbl["__objects__"]
+for k, v in pairs(objects) do
+   print("*****************************")
+   print("objects", k, v, type(v))
+   for k1, v1 in pairs(v) do
+     print("object", k1, v1)
+   end
+
+   for k2, v2 in pairs(getmetatable(v)) do
+       print("object.meta", k2 ,v2)
+   end
+
+end
+
 
 --print(myClass.func_a(nil, 10))
 --print(myClass.func_a(nil, nil))

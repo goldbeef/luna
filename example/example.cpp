@@ -70,12 +70,12 @@ int main(){
     luaL_openlibs(L);
 
     //导出全局函数
-    //lua_register_function(L, "add", add);
+    lua_register_function(L, "add", add);
     //luaL_loadstring(L, "print(add(1+a))");
     //lua_register_function(L, "del", del);
 
     //导出函数对象
-    lua_register_function(L, "NewMyClass", NewMyClass);
+    lua_register_function(L, "NewMyClass", NewMyClass);//导出全局函数
     luaL_dofile(L, "./test.lua");
 
     /*
