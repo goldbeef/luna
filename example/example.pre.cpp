@@ -45840,7 +45840,10 @@ public:
         snprintf(m_name, sizeof(m_name), "hello");
     }
 
-
+    ~my_class() {
+        printf("my_class::~my_class\n");
+    }
+# 61 "example.cpp"
     const char* lua_get_meta_name() { return "_class_meta:""my_class"; } lua_member_item* lua_get_meta_data();;
 };
 
@@ -45858,6 +45861,7 @@ my_class* NewMyClass() {
     return ptr;
 }
 
+
 int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -45870,7 +45874,7 @@ int main(){
 
     lua_register_function(L, "NewMyClass", NewMyClass);
     (luaL_loadfilex(L,"./test.lua",__null) || lua_pcallk(L, (0), ((-1)), (0), 0, __null));
-# 115 "example.cpp"
+# 126 "example.cpp"
     return 0;
 
 }

@@ -47,6 +47,16 @@ public:
         snprintf(m_name, sizeof(m_name), "hello");
     }
 
+    ~my_class() {
+        printf("my_class::~my_class\n");
+    }
+
+    /*
+    void __gc() {
+        printf("my_class::__gc\n");
+    }
+    */
+
     //类导出声明
     DECLARE_LUA_CLASS(my_class);
 };
@@ -64,6 +74,7 @@ my_class* NewMyClass() {
     my_class* ptr = new my_class();
     return ptr;
 }
+
 
 int main(){
     lua_State* L = luaL_newstate();
@@ -112,6 +123,10 @@ int main(){
 
     lua_close(L);
      */
+
+    lua_call_function()
+    lua_call_global_function()
+    lua_call_object_function()
     return 0;
 
 }

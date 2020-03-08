@@ -17,9 +17,6 @@ print("-----------------------------")
 print(myClass.name)
 print("-----------------------------")
 
-
-
-
 print("-----------------------------")
 for k, v in pairs(myClass) do
     print("tObj", k ,v)
@@ -93,6 +90,14 @@ while true do
 
     i = i + 1
 end
+
+function test_gc()
+   local class =  NewMyClass()
+end
+
+test_gc();
+collectgarbage("collect")
+
 
 --print(myClass.func_a(nil, 10))
 --print(myClass.func_a(nil, nil))
