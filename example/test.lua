@@ -5,6 +5,7 @@ print(del(1, 2))
 --]]
 
 
+print("-----------------------------")
 --访问导出的类的成员/方法
 myClass = NewMyClass()
 print("-----------------------------")
@@ -15,6 +16,8 @@ print(myClass.func_a)
 print("-----------------------------")
 print(myClass.name)
 print("-----------------------------")
+
+
 
 
 print("-----------------------------")
@@ -43,7 +46,6 @@ myClass2.name = "hello1"
 print("setting, end")
 print(myClass2.name)
 
-
 print("-----------------------------")
 registTbl = debug.getregistry()
 classMeta = registTbl["_class_meta:my_class"]
@@ -61,7 +63,7 @@ print("-----------------------------")
 objects = registTbl["__objects__"]
 for k, v in pairs(objects) do
    print("*****************************")
-   print("objects", k, v, type(v))
+   print("object", k, v, type(v))
    for k1, v1 in pairs(v) do
      print("object", k1, v1)
    end
@@ -69,9 +71,28 @@ for k, v in pairs(objects) do
    for k2, v2 in pairs(getmetatable(v)) do
        print("object.meta", k2 ,v2)
    end
-
 end
 
+print("-----------------------------")
+print(type(NewMyClass))
+local i = 1
+while true do
+    print("**********************************")
+    k, v = debug.getupvalue(NewMyClass, i)
+    if k == nil then
+        break
+    end
+    print("upvalue", k, v, type(v))
+    for k2, v2 in pairs(v) do
+        print("upvalue.k,v", k2, v2)
+    end
+
+    for k3, v3 in pairs(getmetatable(v)) do
+        print("upvalue.meta.k,v", k3, v3)
+    end
+
+    i = i + 1
+end
 
 --print(myClass.func_a(nil, 10))
 --print(myClass.func_a(nil, nil))
