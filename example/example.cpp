@@ -124,9 +124,17 @@ int main(){
     lua_close(L);
      */
 
+    //调用全局函数
+    /*
     int a, b;
     lua_call_global_function(L, nullptr, "globalAdd", std::tie(a, b), 1, 2);
     printf("a[%d], b[%d]\n", a, b);
+    */
+
+    //调用全局表中的函数
+    printf("c++-------------------------------\n");
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
+    printf("c++-------------------------------\n");
     //lua_call_table_function( )
     //lua_call_object_function()
     return 0;

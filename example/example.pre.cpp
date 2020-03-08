@@ -45751,11 +45751,16 @@ bool lua_call_function(lua_State* L, std::string* err, std::tuple<ret_types&...>
 
 template <typename... ret_types, typename... arg_types>
 bool lua_call_table_function(lua_State* L, std::string* err, const char table[], const char function[], std::tuple<ret_types&...>&& rets, arg_types... args) {
+    stackDump(L, 850, __FUNCTION__);
     lua_get_table_function(L, table, function);
+    stackDump(L, 852, __FUNCTION__);
     int _[] = { 0, (native_to_lua(L, args), 0)... };
+    stackDump(L, 854, __FUNCTION__);
     if (!lua_call_function(L, err, sizeof...(arg_types), sizeof...(ret_types)))
         return false;
+    stackDump(L, 857, __FUNCTION__);
     lua_to_native_mutil(L, rets, std::make_index_sequence<sizeof...(ret_types)>());
+    stackDump(L, 859, __FUNCTION__);
     return true;
 }
 
@@ -45771,20 +45776,28 @@ bool lua_call_object_function(lua_State* L, std::string* err, T* o, const char f
 
 template <typename... ret_types, typename... arg_types>
 bool lua_call_global_function(lua_State* L, std::string* err, const char function[], std::tuple<ret_types&...>&& rets, arg_types... args) {
-    stackDump(L, 870, __FUNCTION__);
+
+    stackDump(L, 876, __FUNCTION__);
+
+
     lua_getglobal(L, function);
-    stackDump(L, 872, __FUNCTION__);
+    stackDump(L, 880, __FUNCTION__);
+
+
     int _[] = { 0, (native_to_lua(L, args), 0)... };
-    stackDump(L, 874, __FUNCTION__);
+    stackDump(L, 884, __FUNCTION__);
     if (!lua_call_function(L, err, sizeof...(arg_types), sizeof...(ret_types)))
         return false;
-    stackDump(L, 877, __FUNCTION__);
+    stackDump(L, 887, __FUNCTION__);
     lua_to_native_mutil(L, rets, std::make_index_sequence<sizeof...(ret_types)>());
-    stackDump(L, 879, __FUNCTION__);
+    stackDump(L, 889, __FUNCTION__);
     return true;
 }
 
-inline bool lua_call_table_function(lua_State* L, std::string* err, const char table[], const char function[]) { return lua_call_table_function(L, err, table, function, std::tie()); }
+inline bool lua_call_table_function(lua_State* L, std::string* err, const char table[], const char function[]) {
+    stackDump(L, 894, __FUNCTION__);
+    return lua_call_table_function(L, err, table, function, std::tie());
+}
 template <typename T> inline bool lua_call_object_function(lua_State* L, std::string* err, T* o, const char function[]) { return lua_call_object_function(L, err, o, function, std::tie()); }
 inline bool lua_call_global_function(lua_State* L, std::string* err, const char function[]) { return lua_call_global_function(L, err, function, std::tie()); }
 
@@ -45881,10 +45894,10 @@ int main(){
 
     lua_register_function(L, "NewMyClass", NewMyClass);
     (luaL_loadfilex(L,"./test.lua",__null) || lua_pcallk(L, (0), ((-1)), (0), 0, __null));
-# 127 "example.cpp"
-    int a, b;
-    lua_call_global_function(L, nullptr, "globalAdd", std::tie(a, b), 1, 2);
-    printf("a[%d], b[%d]\n", a, b);
+# 135 "example.cpp"
+    printf("c++-------------------------------\n");
+    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl;
+    printf("c++-------------------------------\n");
 
 
     return 0;

@@ -115,6 +115,7 @@ end
 function myClass.func_a()
     print("myClass.func_a")
 end
+--]]
 
 s2s = {}
 function s2s.some_func0()
@@ -128,4 +129,3 @@ end
 function s2s.some_func3(var1, var2, var3)
     print(string.format("s2s.some_func3, [%g], [%g], [%g]", var1, var2, var3))
 end
---]]
