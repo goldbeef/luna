@@ -99,6 +99,10 @@ test_gc();
 collectgarbage("collect")
 
 
+function globalAdd(a, b)
+    return b, a
+end
+
 --print(myClass.func_a(nil, 10))
 --print(myClass.func_a(nil, nil))
 --print(myClass.name)

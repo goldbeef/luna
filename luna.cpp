@@ -96,22 +96,37 @@ bool lua_get_table_function(lua_State* L, const char table[], const char functio
 }
 
 bool lua_call_function(lua_State* L, std::string* err, int arg_count, int ret_count) {
+    //func, param1, parm2, parm3...
+    stackDump(L, __LINE__, __FUNCTION__);
     int func_idx = lua_gettop(L) - arg_count;
     if (func_idx <= 0 || !lua_isfunction(L, func_idx))
         return false;
 
+    //func, param1, parm2, parm3..., debug
     lua_getglobal(L, "debug");
-    lua_getfield(L, -1, "traceback");
-    lua_remove(L, -2); // remove 'debug'
+    stackDump(L, __LINE__, __FUNCTION__);
 
+    //func, param1, parm2, parm3..., debug, debug.traceback
+    lua_getfield(L, -1, "traceback");
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //func, param1, parm2, parm3..., debug.traceback
+    lua_remove(L, -2); // remove 'debug'
+    stackDump(L, __LINE__, __FUNCTION__);
+
+    //debug.traceback, func, param1, parm2, parm3...,
     lua_insert(L, func_idx);
+    stackDump(L, __LINE__, __FUNCTION__);
     if (lua_pcall(L, arg_count, ret_count, func_idx)) {
         if (err != nullptr) {
             *err = lua_tostring(L, -1);
         }
         return false;
     }
+    stackDump(L, __LINE__, __FUNCTION__);
+    //debug.traceback, ret1, ret2, ret3,...
     lua_remove(L, -ret_count - 1); // remove 'traceback'
+    stackDump(L, __LINE__, __FUNCTION__);
     return true;
 }
 

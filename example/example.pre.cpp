@@ -45740,7 +45740,9 @@ bool lua_call_function(lua_State* L, std::string* err, int arg_count, int ret_co
 
 template <typename... ret_types, typename... arg_types>
 bool lua_call_function(lua_State* L, std::string* err, std::tuple<ret_types&...>&& rets, arg_types... args) {
+    stackDump(L, 839, __FUNCTION__);
     int _[] = { 0, (native_to_lua(L, args), 0)... };
+    stackDump(L, 841, __FUNCTION__);
     if (!lua_call_function(L, err, sizeof...(arg_types), sizeof...(ret_types)))
         return false;
     lua_to_native_mutil(L, rets, std::make_index_sequence<sizeof...(ret_types)>());
@@ -45769,11 +45771,16 @@ bool lua_call_object_function(lua_State* L, std::string* err, T* o, const char f
 
 template <typename... ret_types, typename... arg_types>
 bool lua_call_global_function(lua_State* L, std::string* err, const char function[], std::tuple<ret_types&...>&& rets, arg_types... args) {
+    stackDump(L, 870, __FUNCTION__);
     lua_getglobal(L, function);
+    stackDump(L, 872, __FUNCTION__);
     int _[] = { 0, (native_to_lua(L, args), 0)... };
+    stackDump(L, 874, __FUNCTION__);
     if (!lua_call_function(L, err, sizeof...(arg_types), sizeof...(ret_types)))
         return false;
+    stackDump(L, 877, __FUNCTION__);
     lua_to_native_mutil(L, rets, std::make_index_sequence<sizeof...(ret_types)>());
+    stackDump(L, 879, __FUNCTION__);
     return true;
 }
 
@@ -45874,7 +45881,12 @@ int main(){
 
     lua_register_function(L, "NewMyClass", NewMyClass);
     (luaL_loadfilex(L,"./test.lua",__null) || lua_pcallk(L, (0), ((-1)), (0), 0, __null));
-# 126 "example.cpp"
+# 127 "example.cpp"
+    int a, b;
+    lua_call_global_function(L, nullptr, "globalAdd", std::tie(a, b), 1, 2);
+    printf("a[%d], b[%d]\n", a, b);
+
+
     return 0;
 
 }

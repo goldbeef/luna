@@ -110,7 +110,7 @@ int main(){
     int x, y;
     const char* name = nullptr;
     // 小心,如果用char*做字符串返回值的话,确保name变量不要在lua_guard g的作用域之外使用
-    cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
+    "cout << lua_call_table_function(L, nullptr, "s2s", "some_func0") << endl; //true
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func_no_such") << endl; //false
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func2", std::tie(), 11, 2) << endl;
     cout << lua_call_table_function(L, nullptr, "s2s", "some_func3", std::tie(), 11, 2, 3) << endl;
@@ -124,9 +124,11 @@ int main(){
     lua_close(L);
      */
 
-    lua_call_function()
-    lua_call_global_function()
-    lua_call_object_function()
+    int a, b;
+    lua_call_global_function(L, nullptr, "globalAdd", std::tie(a, b), 1, 2);
+    printf("a[%d], b[%d]\n", a, b);
+    //lua_call_table_function( )
+    //lua_call_object_function()
     return 0;
 
 }
