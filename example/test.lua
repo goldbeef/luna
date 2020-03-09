@@ -56,6 +56,11 @@ for k, v in pairs(wrapperMeta) do
    print("wrapperMeta", k, v)
 end
 
+print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+for k, v in pairs(registTbl) do
+    print("registry.k.v", k, v)
+end
+
 print("-----------------------------")
 objects = registTbl["__objects__"]
 for k, v in pairs(objects) do
