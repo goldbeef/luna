@@ -65,7 +65,7 @@ print("-----------------------------")
 objects = registTbl["__objects__"]
 for k, v in pairs(objects) do
    print("*****************************")
-   print("object", k, v, type(v))
+   print("object", k, v, type(k), type(v))
    for k1, v1 in pairs(v) do
      print("object", k1, v1)
    end
